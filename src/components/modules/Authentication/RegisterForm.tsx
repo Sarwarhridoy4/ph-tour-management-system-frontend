@@ -62,8 +62,8 @@ export function RegisterForm({
     };
 
     try {
-      const result = await register(userInfo).unwrap();
-      console.log(result);
+      await register(userInfo).unwrap();
+
       toast.success("User created successfully");
       navigate("/verify");
     } catch (error) {
