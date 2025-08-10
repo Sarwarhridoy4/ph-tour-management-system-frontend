@@ -46,7 +46,8 @@ export default function Verify() {
   const [email] = useState(location.state);
   const [confirmed, setConfirmed] = useState(false);
   const [sendOtp] = useSendOtpMutation();
-  const [verifyOtp] = useVerifyOtpMutation();
+  const [verifyOtp, { data, error }] = useVerifyOtpMutation();
+  console.log(data, error);
   const [timer, setTimer] = useState(5);
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -91,11 +92,12 @@ export default function Verify() {
   };
 
   //! Needed - Turned off for development
-  //   useEffect(() => {
-  //     if (!email) {
-  //       navigate("/");
-  //     }
-  //   }, [email]);
+    useEffect(() => {
+      if (!email) {
+        navigate("/");
+      }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [email]);
 
   useEffect(() => {
     if (!email || !confirmed) {
@@ -110,12 +112,19 @@ export default function Verify() {
     return () => clearInterval(timerId);
   }, [email, confirmed]);
 
+  useEffect(() => {
+    if (data?.statusCode === 200 && data.success === true) {
+      navigate("/login");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data?.statusCode, data?.success]);
+
   return (
-    <div className="grid place-content-center h-screen">
+    <div className='grid place-content-center h-screen'>
       {confirmed ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Verify your email address</CardTitle>
+            <CardTitle className='text-xl'>Verify your email address</CardTitle>
             <CardDescription>
               Please enter the 6-digit code we sent to <br /> {email}
             </CardDescription>
@@ -123,13 +132,13 @@ export default function Verify() {
           <CardContent>
             <Form {...form}>
               <form
-                id="otp-form"
+                id='otp-form'
                 onSubmit={form.handleSubmit(onSubmit)}
-                className=" space-y-6"
+                className=' space-y-6'
               >
                 <FormField
                   control={form.control}
-                  name="pin"
+                  name='pin'
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>One-Time Password</FormLabel>
@@ -159,8 +168,8 @@ export default function Verify() {
                       <FormDescription>
                         <Button
                           onClick={handleSendOtp}
-                          type="button"
-                          variant="link"
+                          type='button'
+                          variant='link'
                           disabled={timer !== 0}
                           className={cn("p-0 m-0", {
                             "cursor-pointer": timer === 0,
@@ -178,8 +187,8 @@ export default function Verify() {
               </form>
             </Form>
           </CardContent>
-          <CardFooter className="flex justify-end">
-            <Button form="otp-form" type="submit">
+          <CardFooter className='flex justify-end'>
+            <Button form='otp-form' type='submit'>
               Submit
             </Button>
           </CardFooter>
@@ -187,13 +196,13 @@ export default function Verify() {
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-xl">Verify your email address</CardTitle>
+            <CardTitle className='text-xl'>Verify your email address</CardTitle>
             <CardDescription>
               We will send you an OTP at <br /> {email}
             </CardDescription>
           </CardHeader>
-          <CardFooter className="flex justify-end">
-            <Button onClick={handleSendOtp} className="w-[300px]">
+          <CardFooter className='flex justify-end'>
+            <Button onClick={handleSendOtp} className='w-[300px]'>
               Confirm
             </Button>
           </CardFooter>
