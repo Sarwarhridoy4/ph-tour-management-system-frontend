@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { DeleteConfirmation } from "@/components/DeleteConfirmation";
 import { AddTourTypeModal } from "@/components/modules/Admin/TourType/AddTourModal";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import {
 import {
   useGetTourTypesQuery,
   useDeleteTourTypeMutation,
+  useRemoveTourTypeMutation,
 } from "@/redux/features/Tour/tour.api";
 import { Trash2 } from "lucide-react";
 import {
@@ -26,6 +28,20 @@ import { toast } from "sonner";
 
 export default function AddTourType() {
   const { data } = useGetTourTypesQuery(undefined);
+  const [removeTourType] = useRemoveTourTypeMutation();
+
+  const handleRemoveTourType = async (tourId: string) => {
+    const toastId = toast.loading("Removing...");
+    try {
+      const res = await removeTourType(tourId).unwrap();
+
+      if (res.success) {
+        toast.success("Removed", { id: toastId });
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const [deleteTourType, { isLoading }] = useDeleteTourTypeMutation();
 
@@ -69,18 +85,18 @@ export default function AddTourType() {
           </TableHeader>
           <TableBody>
             {data?.data?.map((item: { _id: string; name: string }) => (
-              <TableRow key={item._id}>
-                <TableCell className='font-medium w-full'>
-                  {item.name}
+              <TableRow>
+                <TableCell className="font-medium w-full">
+                  {item?.name}
                 </TableCell>
-                <TableCell className='text-right'>
-                  <Button
-                    size='sm'
-                    onClick={() => openDeleteDialog(item._id)}
-                    disabled={isLoading}
+                <TableCell>
+                  <DeleteConfirmation
+                    onConfirm={() => handleRemoveTourType(item._id)}
                   >
-                    <Trash2 />
-                  </Button>
+                    <Button size="sm">
+                      <Trash2 />
+                    </Button>
+                  </DeleteConfirmation>
                 </TableCell>
               </TableRow>
             ))}
