@@ -11,6 +11,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
   useGetTourTypesQuery,
   useDeleteTourTypeMutation,
   useRemoveTourTypeMutation,
@@ -27,7 +35,10 @@ import {
 import { toast } from "sonner";
 
 export default function AddTourType() {
-  const { data } = useGetTourTypesQuery(undefined);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [limit, setLimit] = useState(5);
+
+  const { data } = useGetTourTypesQuery({ page: currentPage, limit });
   const [removeTourType] = useRemoveTourTypeMutation();
 
   const handleRemoveTourType = async (tourId: string) => {
@@ -68,6 +79,9 @@ export default function AddTourType() {
       // optionally show error toast
     }
   }
+  const totalPage = data?.meta?.totalPage || 1;
+
+  //* Total page 2 => [0, 0]
 
   return (
     <div className='w-full max-w-7xl mx-auto px-5'>
@@ -121,6 +135,48 @@ export default function AddTourType() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      {totalPage > 1 && (
+        <div className="flex justify-end mt-4">
+          <div>
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    onClick={() => setCurrentPage((prev) => prev - 1)}
+                    className={
+                      currentPage === 1
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPage }, (_, index) => index + 1).map(
+                  (page) => (
+                    <PaginationItem
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      <PaginationLink isActive={currentPage === page}>
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  )
+                )}
+                <PaginationItem>
+                  <PaginationNext
+                    onClick={() => setCurrentPage((prev) => prev + 1)}
+                    className={
+                      currentPage === totalPage
+                        ? "pointer-events-none opacity-50"
+                        : "cursor-pointer"
+                    }
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
